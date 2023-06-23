@@ -37,4 +37,10 @@ public class ClientResourse {
         ClientDTO dto = service.findById(id);
         return ResponseEntity.ok().body(dto);
     }
+
+    @PostMapping
+    public ResponseEntity<ClientDTO> insert(@RequestBody ClientDTO dto) {
+        dto = service.insert(dto);
+        return ResponseEntity.ok().body(dto);
+    }
 }
