@@ -10,6 +10,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityNotFoundException;
 import java.util.Optional;
 
 @Service
@@ -40,5 +41,22 @@ public class ClientService {
         entity.setChildren(dto.getChildren());
         entity = repository.save(entity);
         return new ClientDTO(entity);
+    }
+
+    @Transactional
+    public ClientDTO update(Long id, ClientDTO dto) {
+        try {
+            Client entity = repository.getOne(id);
+            entity.setBirthDate(dto.getBirthDate());
+            entity.setChildren(dto.getChildren());
+            entity.setCpf(dto.getCpf());
+            entity.setIncome(dto.getIncome());
+            entity.setName(dto.getName());
+            entity = repository.save(entity);
+            return new ClientDTO(entity);
+        }
+        catch(EntityNotFoundException e) {
+            throw new ResourceNotFoundException("Id not found " + id);
+        }
     }
 }
