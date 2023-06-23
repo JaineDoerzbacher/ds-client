@@ -3,8 +3,11 @@ package com.ds.client.services;
 import com.ds.client.dtos.ClientDTO;
 import com.ds.client.entities.Client;
 import com.ds.client.repositories.ClientRepository;
-import com.ds.client.services.exceptions.ResourceNotFoundException;
+import com.ds.client.services.exceptions.DatabaseException;
+import com.ds.client.services.exceptions.ResourseNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -28,7 +31,7 @@ public class ClientService {
 
     public ClientDTO findById(Long id) {
         Optional<Client> obj = repository.findById(id);
-        Client entity = obj.orElseThrow(() -> new ResourceNotFoundException("Entity not found"));
+        Client entity = obj.orElseThrow(() -> new ResourseNotFoundException("Entity not found"));
         return new ClientDTO(entity);
     }
 
@@ -56,7 +59,17 @@ public class ClientService {
             return new ClientDTO(entity);
         }
         catch(EntityNotFoundException e) {
-            throw new ResourceNotFoundException("Id not found " + id);
+            throw new ResourseNotFoundException("Id not found " + id);
+        }
+    }
+
+    public void delete(Long id) {
+        try {
+            repository.deleteById(id);
+        } catch (EmptyResultDataAccessException e) { // Para capturar o erro caso o id não exista
+            throw new ResourseNotFoundException("Id not found " + id); // Para retornar o erro 404
+        } catch (DataIntegrityViolationException e) { // Para capturar o erro caso o id esteja sendo usado por outra tabela
+            throw new DatabaseException("Integrity violation");
         }
     }
 }
